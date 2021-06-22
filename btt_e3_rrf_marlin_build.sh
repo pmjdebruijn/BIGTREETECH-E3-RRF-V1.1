@@ -18,8 +18,8 @@ CONFIG_BASE="Creality/Ender-3 Pro/CrealityV1"
 
 
 
-SRC_BRANCH=5ee91c73ed17cbb49899a7d91fce9377fd6e4599 # from 2.0.x
-CFG_BRANCH=release-2.0.8.2
+SRC_BRANCH=4f8191b4818b97bd20eb9db2042dc07c97cce6cc # from 2.0.x
+CFG_BRANCH=release-2.0.9
 
 SRC_CHERRIES=
 
@@ -43,7 +43,7 @@ MACHINE_UUID=e2896306-31f9-49e0-a715-3af29b70e36a
 
 
 
-RETRACT_LENGTH=2.6
+RETRACT_LENGTH=2.7
 
 
 
@@ -188,21 +188,6 @@ git -C ${MARLIN_DIR} reset --hard
 sed -i "s@[Mm]edia@TF card@g" ${MARLIN_DIR}/Marlin/src/lcd/language/language_en.h
 
 sed -i "s@SD Init Fail@TF card init fail@g" ${MARLIN_DIR}/Marlin/src/lcd/language/language_en.h
-
-sed -i "s@BLTouch@BLTouch Tools@g" ${MARLIN_DIR}/Marlin/src/lcd/language/language_en.h
-sed -i "s@\"Reset\"@\"BLTouch Reset\"@g" ${MARLIN_DIR}/Marlin/src/lcd/language/language_en.h
-sed -i "s@\"Self-Test\"@\"BLTouch Self-Test\"@g" ${MARLIN_DIR}/Marlin/src/lcd/language/language_en.h
-sed -i "s@\"Deploy\"@\"BLTouch Deploy\"@g" ${MARLIN_DIR}/Marlin/src/lcd/language/language_en.h
-sed -i "s@\"Stow\"@\"BLTouch Stow\"@g" ${MARLIN_DIR}/Marlin/src/lcd/language/language_en.h
-sed -i "s@\"SW-Mode\"@\"BLTouch SW-Mode\"@g" ${MARLIN_DIR}/Marlin/src/lcd/language/language_en.h
-
-#sed -i "s@@@g" ${MARLIN_DIR}/Marlin/src/lcd/language/language_en.h
-#sed -i "s@@@g" ${MARLIN_DIR}/Marlin/src/lcd/language/language_en.h
-#sed -i "s@@@g" ${MARLIN_DIR}/Marlin/src/lcd/language/language_en.h
-#sed -i "s@@@g" ${MARLIN_DIR}/Marlin/src/lcd/language/language_en.h
-#sed -i "s@@@g" ${MARLIN_DIR}/Marlin/src/lcd/language/language_en.h
-#sed -i "s@@@g" ${MARLIN_DIR}/Marlin/src/lcd/language/language_en.h
-
 
 sed -i "s@\[platformio\]@\[platformio\]\ncore_dir = PlatformIO@" ${MARLIN_DIR}/platformio.ini
 
@@ -495,29 +480,29 @@ for FEATURE in ${FEATURES}; do
 
   if [ "${FEATURE}" == "esp3d" ]; then
     sed -i "s@.*#define CUSTOM_MENU_CONFIG\$@#define CUSTOM_MENU_CONFIG@" ${MARLIN_DIR}/Marlin/Configuration_adv.h
-    sed -i "s@.*#define CUSTOM_MENU_CONFIG_TITLE .*@  #define CUSTOM_MENU_CONFIG_TITLE \"WiFi Tools\"@" ${MARLIN_DIR}/Marlin/Configuration_adv.h
+    sed -i "s@.*#define CUSTOM_MENU_CONFIG_TITLE .*@  #define CUSTOM_MENU_CONFIG_TITLE \"Wireless\"@" ${MARLIN_DIR}/Marlin/Configuration_adv.h
     sed -i "s@.*#define CUSTOM_MENU_CONFIG_SCRIPT_DONE .*@  //#define CUSTOM_MENU_CONFIG_SCRIPT_DONE \"\"@" ${MARLIN_DIR}/Marlin/Configuration_adv.h
     sed -i "s@.*#define CUSTOM_MENU_CONFIG_SCRIPT_RETURN@  #define CUSTOM_MENU_CONFIG_SCRIPT_RETURN@" ${MARLIN_DIR}/Marlin/Configuration_adv.h
     sed -i "s@.*#define CUSTOM_MENU_CONFIG_ONLY_IDLE@  //#define CUSTOM_MENU_CONFIG_ONLY_IDLE@" ${MARLIN_DIR}/Marlin/Configuration_adv.h
 
 
-    sed -i "s@.*#define CONFIG_MENU_ITEM_1_DESC .*@  #define CONFIG_MENU_ITEM_1_DESC \"WiFi Off\"@" ${MARLIN_DIR}/Marlin/Configuration_adv.h
+    sed -i "s@.*#define CONFIG_MENU_ITEM_1_DESC .*@  #define CONFIG_MENU_ITEM_1_DESC \"Radio Off\"@" ${MARLIN_DIR}/Marlin/Configuration_adv.h
     sed -i "s@.*#define CONFIG_MENU_ITEM_1_GCODE .*@  #define CONFIG_MENU_ITEM_1_GCODE \"M118 [ESP110] OFF \"@" ${MARLIN_DIR}/Marlin/Configuration_adv.h
     sed -i "s@.*#define CONFIG_MENU_ITEM_1_CONFIRM@  #define CONFIG_MENU_ITEM_1_CONFIRM@" ${MARLIN_DIR}/Marlin/Configuration_adv.h
 
-    sed -i "s@.*#define CONFIG_MENU_ITEM_2_DESC .*@  #define CONFIG_MENU_ITEM_2_DESC \"WiFi STA Mode\"@" ${MARLIN_DIR}/Marlin/Configuration_adv.h
+    sed -i "s@.*#define CONFIG_MENU_ITEM_2_DESC .*@  #define CONFIG_MENU_ITEM_2_DESC \"Connect STA Mode\"@" ${MARLIN_DIR}/Marlin/Configuration_adv.h
     sed -i "s@.*#define CONFIG_MENU_ITEM_2_GCODE .*@  #define CONFIG_MENU_ITEM_2_GCODE \"M118 [ESP110] WIFI-STA\"@" ${MARLIN_DIR}/Marlin/Configuration_adv.h
     sed -i "s@.*#define CONFIG_MENU_ITEM_2_CONFIRM@  #define CONFIG_MENU_ITEM_2_CONFIRM@" ${MARLIN_DIR}/Marlin/Configuration_adv.h
 
-    sed -i "s@.*#define CONFIG_MENU_ITEM_3_DESC .*@  #define CONFIG_MENU_ITEM_3_DESC \"WiFi AP Mode\"@" ${MARLIN_DIR}/Marlin/Configuration_adv.h
+    sed -i "s@.*#define CONFIG_MENU_ITEM_3_DESC .*@  #define CONFIG_MENU_ITEM_3_DESC \"Connect AP Mode\"@" ${MARLIN_DIR}/Marlin/Configuration_adv.h
     sed -i "s@.*#define CONFIG_MENU_ITEM_3_GCODE .*@  #define CONFIG_MENU_ITEM_3_GCODE \"M118 [ESP110] WIFI-AP\"@" ${MARLIN_DIR}/Marlin/Configuration_adv.h
     sed -i "s@.*#define CONFIG_MENU_ITEM_3_CONFIRM@  #define CONFIG_MENU_ITEM_3_CONFIRM@" ${MARLIN_DIR}/Marlin/Configuration_adv.h
 
-    sed -i "s@.*#define CONFIG_MENU_ITEM_4_DESC .*@  #define CONFIG_MENU_ITEM_4_DESC \"WiFi Restart\"@" ${MARLIN_DIR}/Marlin/Configuration_adv.h
+    sed -i "s@.*#define CONFIG_MENU_ITEM_4_DESC .*@  #define CONFIG_MENU_ITEM_4_DESC \"Module Restart\"@" ${MARLIN_DIR}/Marlin/Configuration_adv.h
     sed -i "s@.*#define CONFIG_MENU_ITEM_4_GCODE .*@  #define CONFIG_MENU_ITEM_4_GCODE \"M118 [ESP444] RESTART\"@" ${MARLIN_DIR}/Marlin/Configuration_adv.h
     sed -i "s@.*#define CONFIG_MENU_ITEM_4_CONFIRM@  #define CONFIG_MENU_ITEM_4_CONFIRM@" ${MARLIN_DIR}/Marlin/Configuration_adv.h
 
-    sed -i "s@.*#define CONFIG_MENU_ITEM_5_DESC .*@  #define CONFIG_MENU_ITEM_5_DESC \"WiFi Reset\"@" ${MARLIN_DIR}/Marlin/Configuration_adv.h
+    sed -i "s@.*#define CONFIG_MENU_ITEM_5_DESC .*@  #define CONFIG_MENU_ITEM_5_DESC \"Module Reset\"@" ${MARLIN_DIR}/Marlin/Configuration_adv.h
     sed -i "s@.*#define CONFIG_MENU_ITEM_5_GCODE .*@  #define CONFIG_MENU_ITEM_5_GCODE \"M118 [ESP444] RESET\"@" ${MARLIN_DIR}/Marlin/Configuration_adv.h
     sed -i "s@.*#define CONFIG_MENU_ITEM_5_CONFIRM@  #define CONFIG_MENU_ITEM_5_CONFIRM@" ${MARLIN_DIR}/Marlin/Configuration_adv.h
   fi
@@ -537,6 +522,13 @@ for FEATURE in ${FEATURES}; do
     sed -i "s@.*#define RETRACT_LENGTH .*@  #define RETRACT_LENGTH              ${RETRACT_LENGTH}@" ${MARLIN_DIR}/Marlin/Configuration_adv.h
     sed -i "s@.*#define RETRACT_FEEDRATE .*@  #define RETRACT_FEEDRATE             70@" ${MARLIN_DIR}/Marlin/Configuration_adv.h
     sed -i "s@.*#define RETRACT_RECOVER_FEEDRATE .*@  #define RETRACT_RECOVER_FEEDRATE     40@" ${MARLIN_DIR}/Marlin/Configuration_adv.h
+  fi
+
+
+
+  if [ "${FEATURE}" == "linearadvance" ]; then
+    sed -i 's@.*#define LIN_ADVANCE@#define LIN_ADVANCE@' ${MARLIN_DIR}/Marlin/Configuration_adv.h
+    sed -i 's@.*#define LIN_ADVANCE_K.*@  #define LIN_ADVANCE_K 0@' ${MARLIN_DIR}/Marlin/Configuration_adv.h
   fi
 
 
