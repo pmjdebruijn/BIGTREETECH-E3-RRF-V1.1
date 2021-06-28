@@ -18,8 +18,8 @@ CONFIG_BASE="Creality/Ender-3 Pro/CrealityV1"
 
 
 
-SRC_BRANCH=4f8191b4818b97bd20eb9db2042dc07c97cce6cc # from 2.0.x
-CFG_BRANCH=release-2.0.9
+SRC_BRANCH=c693c976018ee552563f139a73de78171049ac57 # from 2.0.x
+CFG_BRANCH=release-2.0.9.1
 
 SRC_CHERRIES=
 
@@ -291,7 +291,7 @@ sed -i "s@#define PREHEAT_2_TEMP_HOTEND .*@#define PREHEAT_2_TEMP_HOTEND 215@" $
 sed -i "s@#define PREHEAT_2_TEMP_BED .*@#define PREHEAT_2_TEMP_BED     60@" ${MARLIN_DIR}/Marlin/Configuration.h
 
 # add petg preset
-sed -i "s@.*#define PREHEAT_2_FAN_SPEED.*@&\n\n#define PREHEAT_3_LABEL       \"PETG\"\n#define PREHEAT_3_TEMP_HOTEND 240\n#define PREHEAT_3_TEMP_BED     70\n#define PREHEAT_3_TEMP_CHAMBER 35\n#define PREHEAT_3_FAN_SPEED   127@" Marlin/Marlin/Configuration.h
+sed -i "s@.*#define PREHEAT_2_FAN_SPEED.*@&\n\n#define PREHEAT_3_LABEL       \"PETG\"\n#define PREHEAT_3_TEMP_HOTEND 230\n#define PREHEAT_3_TEMP_BED     70\n#define PREHEAT_3_TEMP_CHAMBER 35\n#define PREHEAT_3_FAN_SPEED   127@" Marlin/Marlin/Configuration.h
 
 # add abs preset
 sed -i "s@.*#define PREHEAT_3_FAN_SPEED.*@&\n\n#define PREHEAT_4_LABEL       \"ASA\"\n#define PREHEAT_4_TEMP_HOTEND 240\n#define PREHEAT_4_TEMP_BED     90\n#define PREHEAT_4_TEMP_CHAMBER 35\n#define PREHEAT_4_FAN_SPEED     0@" Marlin/Marlin/Configuration.h
