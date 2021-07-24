@@ -18,10 +18,10 @@
 - [Micro Swiss All Metal Hotend](https://store.micro-swiss.com/products/all-metal-hotend-kit-for-cr-10)
 - [Micro Swiss MK8 Plated Wear Resistant Nozzle](https://store.micro-swiss.com/collections/nozzles/products/mk8)
 - [TriangleLab Dual Drive Extruder Mini BMG](https://nl.aliexpress.com/item/33029933418.html)
-- [TriangleLab PTFE ID1.9 Tubing](https://nl.aliexpress.com/item/32948036538.html)
 - [Ender 3 EZ Vent Remix (via Shapeways)](https://www.thingiverse.com/thing:3864519)
 - [FlexPlate PEI Print Surface](https://primacreator.com/products/primacreator-flexplate-pei)
 - [TR8x2 Z-axis leadscrew]()
+- [Generic Translucent White PTFE ID2.0 Tubing]()
 
 ## BLTouch (__REQUIRED__)
 
@@ -46,11 +46,13 @@ located in device's top center. Turning the hexnut 90 degrees clockwise fixed it
 ## Marlin Important Notes
 
 **CRITICAL:** The main tested firmware build is now configured for a Mini BMG extruder,
-which required reversing of the extruder direction (and resulting in 140 steps/mm).
+which required reversing of the extruder direction and with
+E-axis Microstepping has been increased to 32 (resulting in 280 steps/mm)
 
-**CRITICAL:** X/Y Microstepping has been increased to 32 (resulting in 160 steps/mm).
+**CRITICAL:** X/Y-axis Microstepping has been increased to 32 (resulting in 160 steps/mm).
 
-**CRITICAL:** Z-axis leadscrew has been upgraded to TR8x2 (resulting in 1600 steps/mm).
+**CRITICAL:** Z-axis leadscrew has been upgraded to TR8x2 and
+Z-axis Microstepping has been decreased to 8 (resulting in 800 steps/mm).
 
 **CRITICAL:** Extended Y-axis range (12mm beyond bed) is used to increase automated bed levelling
 coverage, and compatibility with third party hot-end shrouds may be reduced.
@@ -61,6 +63,8 @@ The status screen update rate has been increased to make it slightly more respon
 
 The status screen flow rate deadzone has been increased, so it's more difficult to
 accidentally trigger flow rate changes from the status screen.
+
+Linear Advance is enabled and active by default.
 
 S-Curve acceleration is disabled.
 

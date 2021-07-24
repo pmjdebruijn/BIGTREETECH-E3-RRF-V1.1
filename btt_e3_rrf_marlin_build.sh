@@ -18,7 +18,7 @@ CONFIG_BASE="Creality/Ender-3 Pro/CrealityV1"
 
 
 
-SRC_BRANCH=c693c976018ee552563f139a73de78171049ac57 # from 2.0.x
+SRC_BRANCH=8283f1577a8ea24a4607c74c7ccf8d3292d3d3bc # from 2.0.x
 CFG_BRANCH=release-2.0.9.1
 
 SRC_CHERRIES=
@@ -30,12 +30,13 @@ DISTRIBUTION_DATE=$(date +%Y-%m-%d)
 
 
 BOARD=$1
-[ "${BOARD}" == "" ] && BOARD="skre3rrfv11" && echo "WARNING: Board not specified, defaulting to '${BOARD}' ..."
+[ "${BOARD}" == "" ] && BOARD="skre3rrfv11"
 
 [ $# -gt 0 ] && shift 1
 
 FEATURES=$*
-[ "${FEATURES}" == "" ] && FEATURES="bltouchhs minibmg microswiss microstep32xy tr8x2z esp3d" && echo "WARNING: Features not specified, defaulting to '${FEATURES}' ..."
+[ "${FEATURES}" == "" ] && [ "${BOARD}" == "melzi" ] && FEATURES=""
+[ "${FEATURES}" == "" ] && [ "${BOARD}" != "melzi" ] && FEATURES="bltouchhs microswiss minibmg linearadvance tr8x2z microstep32e microstep32xy microstep8z esp3d maintmenu"
 
 
 
@@ -43,7 +44,8 @@ MACHINE_UUID=e2896306-31f9-49e0-a715-3af29b70e36a
 
 
 
-RETRACT_LENGTH=2.7
+LINEAR_ADVANCE=0.4
+RETRACT_LENGTH=3.0
 
 
 
@@ -75,6 +77,8 @@ if [ ! -d "${MARLIN_DIR}" ]; then
   git clone https://github.com/MarlinFirmware/Marlin ${MARLIN_DIR}
 
   git -C ${MARLIN_DIR} -c advice.detachedHead=false checkout ${SRC_BRANCH}
+
+  SHORT_BUILD_VERSION=$(git -C ${MARLIN_DIR} describe --tags | sed 's,-,+,;s,-.*,,')
 
   for SRC_CHERRY in ${SRC_CHERRIES}; do
     git -C ${MARLIN_DIR} cherry-pick ${SRC_CHERRY}
@@ -181,6 +185,10 @@ fi
 
 
 
+[[ -z "${SHORT_BUILD_VERSION}" ]] && SHORT_BUILD_VERSION=$(git -C ${MARLIN_DIR} describe --tags | sed 's,-.*,+,')
+
+
+
 git -C ${MARLIN_DIR} reset --hard
 
 
@@ -192,6 +200,8 @@ sed -i "s@SD Init Fail@TF card init fail@g" ${MARLIN_DIR}/Marlin/src/lcd/languag
 sed -i "s@\[platformio\]@\[platformio\]\ncore_dir = PlatformIO@" ${MARLIN_DIR}/platformio.ini
 
 sed -i "s@.*#define CUSTOM_VERSION_FILE.*@&\n\n#define WEBSITE_URL \"www.creality3d.cn\"@" ${MARLIN_DIR}/Marlin/Configuration.h
+
+sed -i "s@.*#define CUSTOM_VERSION_FILE.*@&\n\n#define SHORT_BUILD_VERSION \"${SHORT_BUILD_VERSION}\"@" ${MARLIN_DIR}/Marlin/Configuration.h
 
 sed -i "s@.*#define CUSTOM_VERSION_FILE.*@&\n\n#define STRING_DISTRIBUTION_DATE \"${DISTRIBUTION_DATE}\"@" ${MARLIN_DIR}/Marlin/Configuration.h
 
@@ -210,7 +220,7 @@ sed -i "s@.*#define LEVEL_CORNERS_INSET.*@  #define LEVEL_CORNERS_INSET_LFRB { 3
 
 sed -i "s@.*#define CLASSIC_JERK@#define CLASSIC_JERK@" ${MARLIN_DIR}/Marlin/Configuration.h
 
-sed -i "s@.*#define S_CURVE_ACCELERATION@//#define S_CURVE_ACCELERATION@" ${MARLIN_DIR}/Marlin/Configuration.h
+sed -i "s@.*#define S_CURVE_ACCELERATION@#define S_CURVE_ACCELERATION@" ${MARLIN_DIR}/Marlin/Configuration.h
 
 sed -i "s@.*#define INDIVIDUAL_AXIS_HOMING_MENU@//#define INDIVIDUAL_AXIS_HOMING_MENU@" ${MARLIN_DIR}/Marlin/Configuration.h
 
@@ -478,6 +488,24 @@ for FEATURE in ${FEATURES}; do
 
 
 
+  if [ "${FEATURE}" == "maintmenu" ]; then
+    # Maintenance Builtins
+    sed -i "s@.*#define CUSTOM_MENU_MAIN\$@#define CUSTOM_MENU_MAIN@" ${MARLIN_DIR}/Marlin/Configuration_adv.h
+    sed -i "s@.*#define CUSTOM_MENU_MAIN_TITLE .*@  #define CUSTOM_MENU_MAIN_TITLE \"Maintenance\"@" ${MARLIN_DIR}/Marlin/Configuration_adv.h
+    sed -i "s@.*#define CUSTOM_MENU_MAIN_SCRIPT_DONE@  #define CUSTOM_MENU_MAIN_SCRIPT_DONE@" ${MARLIN_DIR}/Marlin/Configuration_adv.h
+    sed -i "s@.*#define CUSTOM_MENU_MAIN_SCRIPT_RETURN@  #define CUSTOM_MENU_MAIN_SCRIPT_RETURN@" ${MARLIN_DIR}/Marlin/Configuration_adv.h
+
+    sed -i "s@.*#define MAIN_MENU_ITEM_1_DESC .*@  #define MAIN_MENU_ITEM_1_DESC \"Z Lubrication\"@" ${MARLIN_DIR}/Marlin/Configuration_adv.h
+    sed -i "s@.*#define MAIN_MENU_ITEM_1_GCODE .*@  #define MAIN_MENU_ITEM_1_GCODE \"G90\\\nG28\\\nG0 Z0.2\\\nG0 Z240\\\nG0 Z0.2\\\nG0 Z240\\\nG0 Z0.2\\\nG0 Z240\\\nG0 Z0.2\\\nG0 Z240\\\nG0 Z0.2\\\nG27 P2\\\nM84 X Y E\"@" ${MARLIN_DIR}/Marlin/Configuration_adv.h
+    sed -i "s@.*#define MAIN_MENU_ITEM_1_CONFIRM@  #define MAIN_MENU_ITEM_1_CONFIRM@" ${MARLIN_DIR}/Marlin/Configuration_adv.h
+
+    sed -i "s@.*#define MAIN_MENU_ITEM_2_DESC .*@  #define MAIN_MENU_ITEM_2_DESC \"Z Calibration PLA\"@" ${MARLIN_DIR}/Marlin/Configuration_adv.h
+    sed -i "s@.*#define MAIN_MENU_ITEM_2_GCODE .*@  #define MAIN_MENU_ITEM_2_GCODE \"G90\\\nM83\\\nM104 S120\\\nM140 I0\\\nG28\\\nG29\\\nG0 F1200\\\nG0 Z75\\\nG0 X43 Y43\\\nM104 I0\\\nM190 I0\\\nM109 I0\\\nG0 X43 Y188\\\nG0 Z0.2\\\nG1 X188 Y188 E4.2612\\\nG1 X188 Y164 E0.7053\\\nG1 X43 Y164 E4.2612\\\nG1 X43 Y140 E0.7053\\\nG1 X188 Y140 E4.2612\\\nG1 X188 Y116 E0.7053\\\nG1 X43 Y116 E4.2612\\\nG1 X43 Y92 E0.7053\\\nG1 X188 Y92 E4.2612\\\nG1 X188 Y68 E0.7053\\\nG1 X43 Y68 E4.2612\\\nG1 X43.0 Y44 E0.7053\\\nG1 X43.45 Y44 E0.0132\\\nG1 X43.45 Y67.55 E0.7053\\\nG1 X43.9 Y67.55 E0.0132\\\nG1 X43.9 Y44 E0.7053\\\nG1 X44.35 Y44 E0.0132\\\nG1 X44.35 Y67.55 E0.7053\\\nG1 X44.8 Y67.55 E0.0132\\\nG1 X44.8 Y44 E0.7053\\\nG1 X45.25 Y44 E0.0132\\\nG1 X45.25 Y67.55 E0.7053\\\nG1 X45.7 Y67.55 E0.0132\\\nG1 X45.7 Y44 E0.7053\\\nG1 X46.15 Y44 E0.0132\\\nG1 X46.15 Y67.55 E0.7053\\\nG1 X46.6 Y67.55 E0.0132\\\nG1 X46.6 Y44 E0.7053\\\nG1 X47.05 Y44 E0.0132\\\nG1 X47.05 Y67.55 E0.7053\\\nG1 X47.5 Y67.55 E0.0132\\\nG1 X47.5 Y44 E0.7053\\\nG1 X47.95 Y44 E0.0132\\\nG1 X47.95 Y67.55 E0.7053\\\nG1 X48.4 Y67.55 E0.0132\\\nG1 X48.4 Y44 E0.7053\\\nG1 X48.85 Y44 E0.0132\\\nG1 X48.85 Y67.55 E0.7053\\\nG1 X49.3 Y67.55 E0.0132\\\nG1 X49.3 Y44 E0.7053\\\nG1 X49.75 Y44 E0.0132\\\nG1 X49.75 Y67.55 E0.7053\\\nG1 X50.2 Y67.55 E0.0132\\\nG1 X50.2 Y44 E0.7053\\\nG1 X50.65 Y44 E0.0132\\\nG1 X50.65 Y67.55 E0.7053\\\nG1 X51.1 Y67.55 E0.0132\\\nG1 X51.1 Y44 E0.7053\\\nG1 X51.55 Y44 E0.0132\\\nG1 X51.55 Y67.55 E0.7053\\\nG1 X52.0 Y67.55 E0.0132\\\nG1 X52.0 Y44 E0.7053\\\nG1 X52.45 Y44 E0.0132\\\nG1 X52.45 Y67.55 E0.7053\\\nG1 X52.9 Y67.55 E0.0132\\\nG1 X52.9 Y44 E0.7053\\\nG1 X53.35 Y44 E0.0132\\\nG1 X53.35 Y67.55 E0.7053\\\nG1 X53.8 Y67.55 E0.0132\\\nG1 X53.8 Y44 E0.7053\\\nG1 X54.25 Y44 E0.0132\\\nG1 X54.25 Y67.55 E0.7053\\\nG1 X54.7 Y67.55 E0.0132\\\nG1 X54.7 Y44 E0.7053\\\nG1 X55.15 Y44 E0.0132\\\nG1 X55.15 Y67.55 E0.7053\\\nG1 X55.6 Y67.55 E0.0132\\\nG1 X55.6 Y44 E0.7053\\\nG1 X56.05 Y44 E0.0132\\\nG1 X56.05 Y67.55 E0.7053\\\nG1 X56.5 Y67.55 E0.0132\\\nG1 X56.5 Y44 E0.7053\\\nG1 X56.95 Y44 E0.0132\\\nG1 X56.95 Y67.55 E0.7053\\\nG1 X57.4 Y67.55 E0.0132\\\nG1 X57.4 Y44 E0.7053\\\nG1 X57.85 Y44 E0.0132\\\nG1 X57.85 Y67.55 E0.7053\\\nG1 X58.3 Y67.55 E0.0132\\\nG1 X58.3 Y44 E0.7053\\\nG1 X58.75 Y44 E0.0132\\\nG1 X58.75 Y67.55 E0.7053\\\nG1 X59.2 Y67.55 E0.0132\\\nG1 X59.2 Y44 E0.7053\\\nG1 X59.65 Y44 E0.0132\\\nG1 X59.65 Y67.55 E0.7053\\\nG1 X60.1 Y67.55 E0.0132\\\nG1 X60.1 Y44 E0.7053\\\nG1 X60.55 Y44 E0.0132\\\nG1 X60.55 Y67.55 E0.7053\\\nG1 X61.0 Y67.55 E0.0132\\\nG1 X61.0 Y44 E0.7053\\\nG1 X61.45 Y44 E0.0132\\\nG1 X61.45 Y67.55 E0.7053\\\nG1 X61.9 Y67.55 E0.0132\\\nG1 X61.9 Y44 E0.7053\\\nG1 X62.35 Y44 E0.0132\\\nG1 X62.35 Y67.55 E0.7053\\\nG1 X62.8 Y67.55 E0.0132\\\nG1 X62.8 Y44 E0.7053\\\nG1 X63.25 Y44 E0.0132\\\nG1 X63.25 Y67.55 E0.7053\\\nG1 X63.7 Y67.55 E0.0132\\\nG1 X63.7 Y44 E0.7053\\\nG1 X64.15 Y44 E0.0132\\\nG1 X64.15 Y67.55 E0.7053\\\nG1 X64.6 Y67.55 E0.0132\\\nG1 X64.6 Y44 E0.7053\\\nG1 X65.05 Y44 E0.0132\\\nG1 X65.05 Y67.55 E0.7053\\\nG1 X65.5 Y67.55 E0.0132\\\nG1 X65.5 Y44 E0.7053\\\nG1 X65.95 Y44 E0.0132\\\nG1 X65.95 Y67.55 E0.7053\\\nG1 X66.4 Y67.55 E0.0132\\\nG1 X66.4 Y44 E0.7053\\\nM104 S0\\\nM140 S0\\\nG27 P2\\\nM84 X Y E\\\nM107\"@" ${MARLIN_DIR}/Marlin/Configuration_adv.h
+    sed -i "s@.*#define MAIN_MENU_ITEM_2_CONFIRM@  #define MAIN_MENU_ITEM_2_CONFIRM@" ${MARLIN_DIR}/Marlin/Configuration_adv.h
+  fi
+
+
+
   if [ "${FEATURE}" == "esp3d" ]; then
     sed -i "s@.*#define CUSTOM_MENU_CONFIG\$@#define CUSTOM_MENU_CONFIG@" ${MARLIN_DIR}/Marlin/Configuration_adv.h
     sed -i "s@.*#define CUSTOM_MENU_CONFIG_TITLE .*@  #define CUSTOM_MENU_CONFIG_TITLE \"Wireless\"@" ${MARLIN_DIR}/Marlin/Configuration_adv.h
@@ -527,8 +555,9 @@ for FEATURE in ${FEATURES}; do
 
 
   if [ "${FEATURE}" == "linearadvance" ]; then
-    sed -i 's@.*#define LIN_ADVANCE@#define LIN_ADVANCE@' ${MARLIN_DIR}/Marlin/Configuration_adv.h
-    sed -i 's@.*#define LIN_ADVANCE_K.*@  #define LIN_ADVANCE_K 0@' ${MARLIN_DIR}/Marlin/Configuration_adv.h
+    sed -i "s@.*#define S_CURVE_ACCELERATION@//#define S_CURVE_ACCELERATION@" ${MARLIN_DIR}/Marlin/Configuration.h
+    sed -i "s@.*#define LIN_ADVANCE@#define LIN_ADVANCE@" ${MARLIN_DIR}/Marlin/Configuration_adv.h
+    sed -i "s@.*#define LIN_ADVANCE_K.*@  #define LIN_ADVANCE_K ${LINEAR_ADVANCE}@" ${MARLIN_DIR}/Marlin/Configuration_adv.h
   fi
 
 
@@ -576,27 +605,35 @@ for FEATURE in ${FEATURES}; do
 
 
 
-  if [ "${FEATURE}" == "microstep32xy" ]; then
-    sed -i "s@.*#define X_MICROSTEPS .*@    #define X_MICROSTEPS     32@" ${MARLIN_DIR}/Marlin/Configuration_adv.h && X_STEPS=160
-    sed -i "s@.*#define Y_MICROSTEPS .*@    #define Y_MICROSTEPS     32@" ${MARLIN_DIR}/Marlin/Configuration_adv.h && Y_STEPS=160
+  if [ "${FEATURE}" == "minibmg" ]; then
+    sed -i "s@.*#define INVERT_E0_DIR .*@#define INVERT_E0_DIR false@" ${MARLIN_DIR}/Marlin/Configuration.h && E_STEPS=140
+  fi
+
+  if [ "${FEATURE}" == "bmg" ]; then
+    E_STEPS=412
   fi
 
 
 
   if [ "${FEATURE}" == "tr8x2z" ]; then
-    Z_STEPS=1600
+    Z_STEPS=$((${Z_STEPS} * 4))
   fi
 
-
-
-  if [ "${FEATURE}" == "minibmg" ]; then
-    sed -i "s@.*#define INVERT_E0_DIR .*@#define INVERT_E0_DIR false@" ${MARLIN_DIR}/Marlin/Configuration.h && E_STEPS=140
+  if [ "${FEATURE}" == "microstep32e" ]; then
+    sed -i "s@.*#define E0_MICROSTEPS .*@    #define E0_MICROSTEPS    32@" ${MARLIN_DIR}/Marlin/Configuration_adv.h && E_STEPS=$((${E_STEPS} * 2))
   fi
 
+  if [ "${FEATURE}" == "microstep32xy" ]; then
+    sed -i "s@.*#define X_MICROSTEPS .*@    #define X_MICROSTEPS     32@" ${MARLIN_DIR}/Marlin/Configuration_adv.h && X_STEPS=$((${X_STEPS} * 2))
+    sed -i "s@.*#define Y_MICROSTEPS .*@    #define Y_MICROSTEPS     32@" ${MARLIN_DIR}/Marlin/Configuration_adv.h && Y_STEPS=$((${Y_STEPS} * 2))
+  fi
 
+  if [ "${FEATURE}" == "microstep32z" ]; then
+    sed -i "s@.*#define Z_MICROSTEPS .*@    #define Z_MICROSTEPS     32@" ${MARLIN_DIR}/Marlin/Configuration_adv.h && Z_STEPS=$((${Z_STEPS} * 2))
+  fi
 
-  if [ "${FEATURE}" == "bmg" ]; then
-    E_STEPS=412
+  if [ "${FEATURE}" == "microstep8z" ]; then
+    sed -i "s@.*#define Z_MICROSTEPS .*@    #define Z_MICROSTEPS      8@" ${MARLIN_DIR}/Marlin/Configuration_adv.h && Z_STEPS=$((${Z_STEPS} / 2))
   fi
 
 
@@ -611,4 +648,8 @@ sed -i "s@.*#define DEFAULT_AXIS_STEPS_PER_UNIT .*@#define DEFAULT_AXIS_STEPS_PE
 
 (cd ${MARLIN_DIR}; ../${VENV_DIR}/bin/platformio run)
 
-ls -lh ${MARLIN_DIR}/.pio/build/*/firmware.*
+
+
+echo "BOARD: ${BOARD}"
+echo "FEATURES: ${FEATURES}"
+echo "VERSION: ${SHORT_BUILD_VERSION} ${SRC_BRANCH:0:8} ${DISTRIBUTION_DATE}"
