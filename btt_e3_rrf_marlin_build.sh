@@ -18,10 +18,11 @@ CONFIG_BASE="Creality/Ender-3 Pro/CrealityV1"
 
 
 
-SRC_BRANCH=8283f1577a8ea24a4607c74c7ccf8d3292d3d3bc # from 2.0.x
+SRC_BRANCH=35df24e1cbf5b71166580f28389a7c4bd7f54120 # from 2.0.x
 CFG_BRANCH=release-2.0.9.1
 
-SRC_CHERRIES=
+SRC_REVERSIONS=7773504afa546884f533fabefa1497547431bcdf
+SRC_CHERRIES=b1bc2e80036131cde58b4fbc02b76ac08b5a7924
 
 
 
@@ -36,7 +37,7 @@ BOARD=$1
 
 FEATURES=$*
 [ "${FEATURES}" == "" ] && [ "${BOARD}" == "melzi" ] && FEATURES=""
-[ "${FEATURES}" == "" ] && [ "${BOARD}" != "melzi" ] && FEATURES="bltouchhs microswiss minibmg linearadvance tr8x2z microstep32e microstep32xy microstep8z esp3d maintmenu"
+[ "${FEATURES}" == "" ] && [ "${BOARD}" != "melzi" ] && FEATURES="bltouchhs microswiss minibmg linearadvance tr8x2z microstep32e microstep32xy microstep8z limitz limittemp esp3d maintmenu tfcard"
 
 
 
@@ -79,6 +80,10 @@ if [ ! -d "${MARLIN_DIR}" ]; then
   git -C ${MARLIN_DIR} -c advice.detachedHead=false checkout ${SRC_BRANCH}
 
   SHORT_BUILD_VERSION=$(git -C ${MARLIN_DIR} describe --tags | sed 's,-,+,;s,-.*,,')
+
+  for SRC_REVERSION in ${SRC_REVERSIONS}; do
+    git -C ${MARLIN_DIR} revert --no-edit ${SRC_REVERSION}
+  done
 
   for SRC_CHERRY in ${SRC_CHERRIES}; do
     git -C ${MARLIN_DIR} cherry-pick ${SRC_CHERRY}
@@ -193,10 +198,6 @@ git -C ${MARLIN_DIR} reset --hard
 
 
 
-sed -i "s@[Mm]edia@TF card@g" ${MARLIN_DIR}/Marlin/src/lcd/language/language_en.h
-
-sed -i "s@SD Init Fail@TF card init fail@g" ${MARLIN_DIR}/Marlin/src/lcd/language/language_en.h
-
 sed -i "s@\[platformio\]@\[platformio\]\ncore_dir = PlatformIO@" ${MARLIN_DIR}/platformio.ini
 
 sed -i "s@.*#define CUSTOM_VERSION_FILE.*@&\n\n#define WEBSITE_URL \"www.creality3d.cn\"@" ${MARLIN_DIR}/Marlin/Configuration.h
@@ -220,12 +221,7 @@ sed -i "s@.*#define LEVEL_CORNERS_INSET.*@  #define LEVEL_CORNERS_INSET_LFRB { 3
 
 sed -i "s@.*#define CLASSIC_JERK@#define CLASSIC_JERK@" ${MARLIN_DIR}/Marlin/Configuration.h
 
-sed -i "s@.*#define S_CURVE_ACCELERATION@#define S_CURVE_ACCELERATION@" ${MARLIN_DIR}/Marlin/Configuration.h
-
 sed -i "s@.*#define INDIVIDUAL_AXIS_HOMING_MENU@//#define INDIVIDUAL_AXIS_HOMING_MENU@" ${MARLIN_DIR}/Marlin/Configuration.h
-
-# limit z height
-sed -i "s@#define Z_MAX_POS .*@#define Z_MAX_POS 240@" ${MARLIN_DIR}/Marlin/Configuration.h
 
 # fix bed center
 sed -i "s@#define X_MAX_POS .*@#define X_MAX_POS 243 // for BLTouch@" ${MARLIN_DIR}/Marlin/Configuration.h
@@ -257,13 +253,6 @@ sed -i "s@.*#define SHOW_REMAINING_TIME@  #define SHOW_REMAINING_TIME@" ${MARLIN
 sed -i "s@.*#define USE_M73_REMAINING_TIME@    #define USE_M73_REMAINING_TIME@" ${MARLIN_DIR}/Marlin/Configuration_adv.h
 sed -i "s@.*if (blink \&\& estimation_string@          if (estimation_string@" ${MARLIN_DIR}/Marlin/src/lcd/dogm/status_screen_DOGM.cpp
 
-# firmware based retraction support
-#sed -i "s@.*#define FWRETRACT@#define FWRETRACT@" ${MARLIN_DIR}/Marlin/Configuration_adv.h
-#sed -i "s@.*#define FWRETRACT_AUTORETRACT@  //#define FWRETRACT_AUTORETRACT@" ${MARLIN_DIR}/Marlin/Configuration_adv.h
-#sed -i "s@.*#define RETRACT_LENGTH .*@  #define RETRACT_LENGTH              ${RETRACT_LENGTH}@" ${MARLIN_DIR}/Marlin/Configuration_adv.h
-#sed -i "s@.*#define RETRACT_FEEDRATE .*@  #define RETRACT_FEEDRATE             70@" ${MARLIN_DIR}/Marlin/Configuration_adv.h
-#sed -i "s@.*#define RETRACT_RECOVER_FEEDRATE .*@  #define RETRACT_RECOVER_FEEDRATE     40@" ${MARLIN_DIR}/Marlin/Configuration_adv.h
-
 # nozzle parking
 sed -i "s@.*#define NOZZLE_PARK_FEATURE@#define NOZZLE_PARK_FEATURE@" ${MARLIN_DIR}/Marlin/Configuration.h
 sed -i "s@.*#define NOZZLE_PARK_POINT .*@  #define NOZZLE_PARK_POINT { 50, 200, 100 }@" ${MARLIN_DIR}/Marlin/Configuration.h
@@ -282,12 +271,6 @@ sed -i "s@M303 U1 E%i S%i@M303 U1 E%i C9 S%i@" ${MARLIN_DIR}/Marlin/src/lcd/menu
 
 # make sure bed pid temp remains disabled, to keep compatibility with flex-steel pei
 sed -i "s@.*#define PIDTEMPBED@//#define PIDTEMPBED@" ${MARLIN_DIR}/Marlin/Configuration.h
-
-# add a little more safety, limits selectable temp to 10 degrees less
-sed -i "s@#define BED_MAXTEMP .*@#define BED_MAXTEMP      110@" ${MARLIN_DIR}/Marlin/Configuration.h
-
-# add a little more safety, limits selectable temp to 15 degrees less
-sed -i "s@#define HEATER_0_MAXTEMP 275@#define HEATER_0_MAXTEMP 265@" ${MARLIN_DIR}/Marlin/Configuration.h
 
 # modernize pla preset
 sed -i "s@#define PREHEAT_1_LABEL .*@#define PREHEAT_1_LABEL       \"PLA\"@" ${MARLIN_DIR}/Marlin/Configuration.h
@@ -638,6 +621,27 @@ for FEATURE in ${FEATURES}; do
 
 
 
+  if [ "${FEATURE}" == "limitz" ]; then
+    # limit z height
+    sed -i "s@#define Z_MAX_POS .*@#define Z_MAX_POS 240@" ${MARLIN_DIR}/Marlin/Configuration.h
+  fi
+
+  if [ "${FEATURE}" == "limittemp" ]; then
+    # add a little more safety, limits selectable temp to 10 degrees less
+    sed -i "s@#define BED_MAXTEMP .*@#define BED_MAXTEMP      110@" ${MARLIN_DIR}/Marlin/Configuration.h
+
+    # add a little more safety, limits selectable temp to 15 degrees less
+    sed -i "s@#define HEATER_0_MAXTEMP 275@#define HEATER_0_MAXTEMP 265@" ${MARLIN_DIR}/Marlin/Configuration.h
+  fi
+
+
+
+  if [ "${FEATURE}" == "tfcard" ]; then
+    sed -i "s@[Mm]edia@TF card@g" ${MARLIN_DIR}/Marlin/src/lcd/language/language_en.h
+
+    sed -i "s@SD Init Fail@TF card init fail@g" ${MARLIN_DIR}/Marlin/src/lcd/language/language_en.h
+  fi
+
 done
 
 
@@ -652,4 +656,4 @@ sed -i "s@.*#define DEFAULT_AXIS_STEPS_PER_UNIT .*@#define DEFAULT_AXIS_STEPS_PE
 
 echo "BOARD: ${BOARD}"
 echo "FEATURES: ${FEATURES}"
-echo "VERSION: ${SHORT_BUILD_VERSION} ${SRC_BRANCH:0:8} ${DISTRIBUTION_DATE}"
+echo "VERSION: Marlin ${SHORT_BUILD_VERSION} (${SRC_BRANCH:0:8}) ${DISTRIBUTION_DATE}"
