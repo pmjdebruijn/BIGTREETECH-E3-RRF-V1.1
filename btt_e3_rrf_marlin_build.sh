@@ -18,11 +18,11 @@ CONFIG_BASE="Creality/Ender-3 Pro/CrealityV1"
 
 
 
-SRC_BRANCH=35df24e1cbf5b71166580f28389a7c4bd7f54120 # from 2.0.x
-CFG_BRANCH=release-2.0.9.1
+SRC_BRANCH=30158424e993919b9a4d8fe4b14793df3affe7ff # from 2.0.x
+CFG_BRANCH=release-2.0.9.2
 
-SRC_REVERSIONS=7773504afa546884f533fabefa1497547431bcdf
-SRC_CHERRIES=b1bc2e80036131cde58b4fbc02b76ac08b5a7924
+SRC_REVERSIONS=
+SRC_CHERRIES=
 
 
 
@@ -37,7 +37,7 @@ BOARD=$1
 
 FEATURES=$*
 [ "${FEATURES}" == "" ] && [ "${BOARD}" == "melzi" ] && FEATURES=""
-[ "${FEATURES}" == "" ] && [ "${BOARD}" != "melzi" ] && FEATURES="bltouchhs microswiss minibmg linearadvance tr8x2z microstep32e microstep32xy microstep8z limitz limittemp esp3d maintmenu tfcard"
+[ "${FEATURES}" == "" ] && [ "${BOARD}" != "melzi" ] && FEATURES="bltouchhs minibmg linearadvance tr8x2z microstep32e microstep32xy microstep8z limitz limittemp esp3d maintmenu tfcard"
 
 
 
@@ -45,7 +45,7 @@ MACHINE_UUID=e2896306-31f9-49e0-a715-3af29b70e36a
 
 
 
-LINEAR_ADVANCE=0.4
+LINEAR_ADVANCE=0.0
 RETRACT_LENGTH=3.0
 
 
@@ -232,7 +232,7 @@ sed -i "s@#define Y_BED_SIZE .*@#define Y_BED_SIZE 231@" ${MARLIN_DIR}/Marlin/Co
 sed -i "s@.*#define NO_WORKSPACE_OFFSETS@#define NO_WORKSPACE_OFFSETS@" ${MARLIN_DIR}/Marlin/Configuration_adv.h
 
 # change default feedrates
-sed -i "s@#define DEFAULT_MAX_FEEDRATE .*@#define DEFAULT_MAX_FEEDRATE          { 500, 500, 10, 25 }@" ${MARLIN_DIR}/Marlin/Configuration.h
+sed -i "s@#define DEFAULT_MAX_FEEDRATE .*@#define DEFAULT_MAX_FEEDRATE          { 500, 500, 10, 60 }@" ${MARLIN_DIR}/Marlin/Configuration.h
 
 # faster Z manual move
 sed -i "s@#define MANUAL_FEEDRATE .*@#define MANUAL_FEEDRATE { 50*60, 50*60, 10*60, 2*60 }@" ${MARLIN_DIR}/Marlin/Configuration_adv.h
@@ -541,6 +541,8 @@ for FEATURE in ${FEATURES}; do
     sed -i "s@.*#define S_CURVE_ACCELERATION@//#define S_CURVE_ACCELERATION@" ${MARLIN_DIR}/Marlin/Configuration.h
     sed -i "s@.*#define LIN_ADVANCE@#define LIN_ADVANCE@" ${MARLIN_DIR}/Marlin/Configuration_adv.h
     sed -i "s@.*#define LIN_ADVANCE_K.*@  #define LIN_ADVANCE_K ${LINEAR_ADVANCE}@" ${MARLIN_DIR}/Marlin/Configuration_adv.h
+
+    sed -i "s@.*#define DEFAULT_EJERK.*@#define DEFAULT_EJERK    10.0  // For Linear Advance@" ${MARLIN_DIR}/Marlin/Configuration.h
   fi
 
 

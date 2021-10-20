@@ -4,7 +4,8 @@
 >
 > Make sure to watch
 > [this](https://www.youtube.com/watch?v=VK_K6fp4BIk) and
-> [this](https://www.youtube.com/watch?v=ckQ9UWlmdVA).
+> [this](https://www.youtube.com/watch?v=ckQ9UWlmdVA) and
+> [this](https://www.youtube.com/watch?v=eGUPBoDxmKk).
 >
 > If you're having issues updating your E3 RRF V1.1 firmware, try reformatting your SD card.
 >
@@ -20,6 +21,7 @@
 - [TriangleLab Dual Drive Extruder Mini BMG](https://nl.aliexpress.com/item/33029933418.html)
 - [Ender 3 EZ Vent Remix (via Shapeways)](https://www.thingiverse.com/thing:3864519)
 - [FlexPlate PEI Print Surface](https://primacreator.com/products/primacreator-flexplate-pei)
+- [Polycarbonate V Wheels](https://www.amazon.nl/gp/product/B07PXCLSQN/)
 - [TR8x2 Z-axis leadscrew]()
 - [Generic Translucent White PTFE ID2.0 Tubing]()
 
