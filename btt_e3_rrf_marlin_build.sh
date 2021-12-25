@@ -18,7 +18,7 @@ CONFIG_BASE="Creality/Ender-3 Pro/CrealityV1"
 
 
 
-SRC_BRANCH=30158424e993919b9a4d8fe4b14793df3affe7ff # from 2.0.x
+SRC_BRANCH=854ce63358f409340863024edd38fb7d1499fd91 # from 2.0.x
 CFG_BRANCH=release-2.0.9.2
 
 SRC_REVERSIONS=
@@ -392,6 +392,9 @@ if [ "${BOARD:0:8}" == "skre3rrf" ]; then
   sed -i "s@.*#define SDSORT_CACHE_VFATS .*@    #define SDSORT_CACHE_VFATS 5@" ${MARLIN_DIR}/Marlin/Configuration_adv.h
 
   sed -i "s@.*#define TMC_DEBUG@  #define TMC_DEBUG@" ${MARLIN_DIR}/Marlin/Configuration_adv.h
+
+  sed -i "s@.*#define CONFIGURATION_EMBEDDING@  #define CONFIGURATION_EMBEDDING@" ${MARLIN_DIR}/Marlin/Configuration_adv.h
+
 fi
 
 
