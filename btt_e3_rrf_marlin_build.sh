@@ -2,7 +2,7 @@
 #
 # SKR E3 RRF V1.1  -  Marlin 2.0  -  firmware build script
 #
-# Copyright (c) 2019-2021 Pascal de Bruijn
+# Copyright (c) 2019-2022 Pascal de Bruijn
 #
 
 
@@ -18,8 +18,8 @@ CONFIG_BASE="Creality/Ender-3 Pro/CrealityV1"
 
 
 
-SRC_BRANCH=2.0.9.3 # from 2.0.x
-CFG_BRANCH=release-2.0.9.3
+SRC_BRANCH=ad786a7930f1a0516427f7e0d827402387549ead # from 2.0.x
+CFG_BRANCH=release-2.0.9.4
 
 SRC_REVERSIONS=
 SRC_CHERRIES=
@@ -37,7 +37,7 @@ BOARD=$1
 
 FEATURES=$*
 [ "${FEATURES}" == "" ] && [ "${BOARD}" == "melzi" ] && FEATURES=""
-[ "${FEATURES}" == "" ] && [ "${BOARD}" != "melzi" ] && FEATURES="bltouchhs minibmg linearadvance tr8x2z microstep32e microstep32xy microstep8z limitz limittemp esp3d maintmenu tfcard"
+[ "${FEATURES}" == "" ] && [ "${BOARD}" != "melzi" ] && FEATURES="bltouchhs minibmg linearadvance tr8x2z microstep32e microstep32xy microstep8z limitz limittemp esp3d maintmenu skew tfcard"
 
 
 
@@ -98,91 +98,6 @@ if [ ! -d "${MARLIN_DIR}" ]; then
   git -C ${MARLIN_DIR} add Marlin/_Bootscreen.h
 
   git -C ${MARLIN_DIR} commit --all --message "$0: ${CONFIG_BASE} example config"
-
-  patch -d ${MARLIN_DIR} -p1 << EOF
-diff --git a/Marlin/src/lcd/menu/menu_main.cpp b/Marlin/src/lcd/menu/menu_main.cpp
---- a/Marlin/src/lcd/menu/menu_main.cpp
-+++ b/Marlin/src/lcd/menu/menu_main.cpp
-@@ -348,16 +348,6 @@ void menu_main() {
- 
-   SUBMENU(MSG_CONFIGURATION, menu_configuration);
- 
--  #if ENABLED(CUSTOM_MENU_MAIN)
--    if (TERN1(CUSTOM_MENU_MAIN_ONLY_IDLE, !busy)) {
--      #ifdef CUSTOM_MENU_MAIN_TITLE
--        SUBMENU_P(PSTR(CUSTOM_MENU_MAIN_TITLE), custom_menus_main);
--      #else
--        SUBMENU(MSG_CUSTOM_COMMANDS, custom_menus_main);
--      #endif
--    }
--  #endif
--
-   #if ENABLED(ADVANCED_PAUSE_FEATURE)
-     #if E_STEPPERS == 1 && DISABLED(FILAMENT_LOAD_UNLOAD_GCODES)
-       if (thermalManager.targetHotEnoughToExtrude(active_extruder))
-@@ -369,6 +359,16 @@ void menu_main() {
-     #endif
-   #endif
- 
-+  #if ENABLED(CUSTOM_MENU_MAIN)
-+    if (TERN1(CUSTOM_MENU_MAIN_ONLY_IDLE, !busy)) {
-+      #ifdef CUSTOM_MENU_MAIN_TITLE
-+        SUBMENU_P(PSTR(CUSTOM_MENU_MAIN_TITLE), custom_menus_main);
-+      #else
-+        SUBMENU(MSG_CUSTOM_COMMANDS, custom_menus_main);
-+      #endif
-+    }
-+  #endif
-+
-   #if ENABLED(LCD_INFO_MENU)
-     SUBMENU(MSG_INFO_MENU, menu_info);
-   #endif
-EOF
-
-  git -C ${MARLIN_DIR} commit --all --message "$0: reorganize main menu"
-
-  patch -d ${MARLIN_DIR} -p1 << EOF
-diff --git a/Marlin/src/lcd/menu/menu_configuration.cpp b/Marlin/src/lcd/menu/menu_configuration.cpp
-index 7ea355b795..3f5aade57d 100644
---- a/Marlin/src/lcd/menu/menu_configuration.cpp
-+++ b/Marlin/src/lcd/menu/menu_configuration.cpp
-@@ -494,16 +494,6 @@ void menu_configuration() {
-     SUBMENU(MSG_DEBUG_MENU, menu_debug);
-   #endif
- 
--  #if ENABLED(CUSTOM_MENU_CONFIG)
--    if (TERN1(CUSTOM_MENU_CONFIG_ONLY_IDLE, !busy)) {
--      #ifdef CUSTOM_MENU_CONFIG_TITLE
--        SUBMENU_P(PSTR(CUSTOM_MENU_CONFIG_TITLE), custom_menus_configuration);
--      #else
--        SUBMENU(MSG_CUSTOM_COMMANDS, custom_menus_configuration);
--      #endif
--    }
--  #endif
--
-   SUBMENU(MSG_ADVANCED_SETTINGS, menu_advanced_settings);
- 
-   #if ENABLED(BABYSTEP_ZPROBE_OFFSET)
-@@ -558,6 +548,16 @@ void menu_configuration() {
-     SUBMENU(MSG_RETRACT, menu_config_retract);
-   #endif
- 
-+  #if ENABLED(CUSTOM_MENU_CONFIG)
-+    if (TERN1(CUSTOM_MENU_CONFIG_ONLY_IDLE, !busy)) {
-+      #ifdef CUSTOM_MENU_CONFIG_TITLE
-+        SUBMENU_P(PSTR(CUSTOM_MENU_CONFIG_TITLE), custom_menus_configuration);
-+      #else
-+        SUBMENU(MSG_CUSTOM_COMMANDS, custom_menus_configuration);
-+      #endif
-+    }
-+  #endif
-+
-   #if HAS_FILAMENT_SENSOR
-     EDIT_ITEM(bool, MSG_RUNOUT_SENSOR, &runout.enabled, runout.reset);
-   #endif
-EOF
-
-  git -C ${MARLIN_DIR} commit --all --message "$0: reorganize configuration menu"
 
 else
   echo "WARNING: Reusing preexisting ${MARLIN_DIR} directory..."
@@ -580,7 +495,7 @@ for FEATURE in ${FEATURES}; do
 
     sed -i "s@.*#define XY_PROBE_FEEDRATE .*@#define XY_PROBE_FEEDRATE (150*60)@" ${MARLIN_DIR}/Marlin/Configuration.h
 
-    sed -i "s@.*#define Z_PROBE_FEEDRATE_FAST .*@#define Z_PROBE_FEEDRATE_FAST (10*60)@" ${MARLIN_DIR}/Marlin/Configuration.h
+    sed -i "s@.*#define Z_PROBE_FEEDRATE_FAST .*@#define Z_PROBE_FEEDRATE_FAST (5*60)@" ${MARLIN_DIR}/Marlin/Configuration.h
   fi
 
 
@@ -639,6 +554,11 @@ for FEATURE in ${FEATURES}; do
     sed -i "s@#define HEATER_0_MAXTEMP 275@#define HEATER_0_MAXTEMP 265@" ${MARLIN_DIR}/Marlin/Configuration.h
   fi
 
+
+  if [ "${FEATURE}" == "skew" ]; then
+    sed -i "s@/*#define SKEW_CORRECTION@#define SKEW_CORRECTION@" ${MARLIN_DIR}/Marlin/Configuration.h
+    sed -i "s@/*#define SKEW_CORRECTION_GCODE@#define SKEW_CORRECTION_GCODE@" ${MARLIN_DIR}/Marlin/Configuration.h
+  fi
 
 
   if [ "${FEATURE}" == "tfcard" ]; then
